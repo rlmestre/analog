@@ -11,11 +11,13 @@ import 'prismjs';
 import 'prismjs/plugins/toolbar/prism-toolbar';
 import 'prismjs/components/prism-bash';
 import 'prismjs/components/prism-css';
+import 'prismjs/components/prism-diff';
 import 'prismjs/components/prism-javascript';
 import 'prismjs/components/prism-json';
 import 'prismjs/components/prism-markup';
 import 'prismjs/components/prism-typescript';
 import 'prismjs/plugins/copy-to-clipboard/prism-copy-to-clipboard';
+import 'prismjs/plugins/diff-highlight/prism-diff-highlight';
 
 declare const Prism: typeof import('prismjs');
 
@@ -35,7 +37,7 @@ export class MarkedSetupService {
       if (!lang) {
         return '<pre><code>' + code + '</code></pre>';
       }
-      const langClass = 'language-' + lang;
+      const langClass = `language-${lang}${lang.startsWith('diff-') ? ' diff-highlight' : ''}`;
       const html =
         '<pre class="' +
         langClass +
@@ -52,7 +54,9 @@ export class MarkedSetupService {
       markedHighlight({
         async: true,
         highlight: (code, lang) => {
-          lang = lang || 'typescript';
+          const diff = lang?.startsWith('diff-');
+          lang = diff ? lang.split('-')[1] : lang || 'typescript';
+
           if (!Prism.languages[lang]) {
             if (lang !== 'mermaid') {
               console.warn(`Notice:
@@ -65,7 +69,7 @@ export class MarkedSetupService {
             }
             return code;
           }
-          return Prism.highlight(code, Prism.languages[lang], lang);
+          return Prism.highlight(code, diff ? Prism.languages.diff : Prism.languages[lang], lang);
         },
       }),
       {
