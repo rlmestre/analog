@@ -14,8 +14,10 @@ import {
 import { isFunctionDeclaration } from 'typescript';
 
 const SCRIPT_TAG_REGEX = /<script lang="ts">([\s\S]*?)<\/script>/i;
-const TEMPLATE_TAG_REGEX = /<template>([\s\S]*?)<\/template>/i;
+const TEMPLATE_TAG_REGEX = /<template(.*?)>([\s\S]*?)<\/template>/is;
 const STYLE_TAG_REGEX = /<style>([\s\S]*?)<\/style>/i;
+const ELEMENT_PROPERTIES_REGEX =
+  /(\*?\[?\(?[a-zA-Z0-9-.]+\)?\]?\s*=\s*"[^"]+")/g;
 
 const ON_INIT = 'onInit';
 const ON_DESTROY = 'onDestroy';
@@ -45,11 +47,31 @@ export function compileNgFile(
   } = names(componentName);
 
   // eslint-disable-next-line prefer-const
-  let [scriptContent, templateContent, styleContent] = [
+  let [scriptContent, templateParts, styleContent] = [
     SCRIPT_TAG_REGEX.exec(fileContent)?.pop()?.trim() || '',
-    TEMPLATE_TAG_REGEX.exec(fileContent)?.pop()?.trim() || '',
+    TEMPLATE_TAG_REGEX.exec(fileContent) || [],
     STYLE_TAG_REGEX.exec(fileContent)?.pop()?.trim() || '',
   ];
+
+  const elementProps = templateParts[1]?.trim() || '';
+  let templateContent = templateParts[2]?.trim() || '';
+  const hostMetadata = elementProps.match(ELEMENT_PROPERTIES_REGEX) ?? [];
+  const hostProperties = hostMetadata
+    .map((prop) => {
+      if (prop.startsWith('*')) {
+        console.warn(
+          '[Analog] Structural directives cannot be used on a host element'
+        );
+        return '';
+      }
+      const splitIndex = prop.indexOf('='); // find the first `=`
+      const propName = prop.slice(0, splitIndex).trim();
+      const propValue = prop.slice(splitIndex + 1).trim();
+
+      return `"${propName}": ${propValue}`;
+    })
+    .filter(Boolean)
+    .join(', ');
 
   if (!scriptContent && !templateContent) {
     throw new Error(
@@ -79,6 +101,7 @@ import { ${ngType}${
       template: \`${templateContent}\``
       : ''
   }
+  ${hostProperties.length ? `host: {${hostProperties}}` : ''}
 })
 export default class ${entityName} {
   constructor() {}

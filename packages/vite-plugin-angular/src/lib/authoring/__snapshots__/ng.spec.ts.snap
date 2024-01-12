@@ -1,5 +1,21 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
+exports[`authoring ng file > should ignore and warn about structural directives on the component template tag 1`] = `
+"
+import { Component, ChangeDetectionStrategy } from '@angular/core';
+
+@Component({
+  standalone: true,
+  selector: 'virtual,Virtual,VIRTUAL',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+      template: \`Hi\`
+  
+})
+export default class VirtualAnalogComponent {
+  constructor() {}
+}"
+`;
+
 exports[`authoring ng file > should process component as ng file 1`] = `
 "import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { signal } from "@angular/core";
@@ -15,6 +31,7 @@ import { signal } from "@angular/core";
   <p>{ b }</p>
   <p>{ c }</p>
   <p>{{ test }}</p>\`
+
 })
 export default class VirtualAnalogComponent {
     constructor() {
@@ -68,4 +85,36 @@ export default class VirtualAnalogDirective {
     }
 }
 "
+`;
+
+exports[`authoring ng file > should process host properties on the component template tag 1`] = `
+"
+import { Component, ChangeDetectionStrategy } from '@angular/core';
+
+@Component({
+  standalone: true,
+  selector: 'virtual,Virtual,VIRTUAL',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+      template: \`Hi\`
+  host: {"[attr.data-test]": "test"}
+})
+export default class VirtualAnalogComponent {
+  constructor() {}
+}"
+`;
+
+exports[`authoring ng file > should process multi-line host properties on the component template tag 1`] = `
+"
+import { Component, ChangeDetectionStrategy } from '@angular/core';
+
+@Component({
+  standalone: true,
+  selector: 'virtual,Virtual,VIRTUAL',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+      template: \`Hi\`
+  host: {"[attr.data-test]": "test", "class": "foo bar"}
+})
+export default class VirtualAnalogComponent {
+  constructor() {}
+}"
 `;

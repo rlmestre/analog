@@ -7,9 +7,13 @@
   inject(DestroyRef).onDestroy(() => {
     console.log('hello destroyed');
   });
+
+  const click = () => {
+    console.log('click');
+  }
 </script>
 
-<template>
+<template (click)="click()">
   <h1>Hello.ng again</h1>
   <p>{{ a }}</p>
   <p>{{ b }}</p>
